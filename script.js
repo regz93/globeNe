@@ -52,7 +52,7 @@ function showMap(lat, lng, data) {
     }
 
     // Formater la phrase avec les données du JSON (utilisation de template literals)
-    const popupText = `Hey ! Je suis un client du shop ${data[15][1]} !J'ai commandé pour ${data[14][1]} euros depuis ${data[17][1]}.`;
+    const popupText = `Hey ! Je suis un client du shop ${data[15][1]}  !J'ai commandé pour ${data[14][1]} euros depuis ${data[17][1]}.`;
 
     // Ajouter un marqueur pour la destination avec le popup personnalisé et autoPan activé
     destinationMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupText, { autoPan: true }).openPopup();
