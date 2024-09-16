@@ -78,10 +78,31 @@
         #map-container {
             z-index: 1; /* Pour s'assurer qu'il est en-dessous des autres conteneurs */
         }
+
+        /* Conteneur pour le logo avec fond blanc et coins arrondis */
+        #logo-container {
+            position: fixed;
+            top: 20px; /* Positionnez le conteneur en haut */
+            left: 50%;
+            transform: translateX(-50%); /* Centrer horizontalement */
+            background-color: #ffffff; /* Fond blanc */
+            padding: 10px;
+            border-radius: 15px; /* Coins arrondis */
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+            z-index: 20; /* S'assurer que le conteneur est au-dessus des autres éléments */
+            width: 150px; /* Largeur du container */
+            text-align: center;
+        }
+
+        /* Style pour le logo */
+        .logo {
+            width: 100%; /* Ajuste la largeur du logo à celle du container */
+            height: auto; /* Préserve le ratio du logo */
+        }
     </style>
 </head>
 <body>
-      <!-- Container pour le logo (toujours visible) -->
+    <!-- Container pour le logo (toujours visible) -->
     <div id="logo-container">
         <img src="logo_ne.png" alt="Logo" class="logo">
     </div>
