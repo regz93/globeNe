@@ -1,0 +1,122 @@
+/* Utilisation de la police DM Sans pour toute la page */
+body {
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: bold; /* Met la police en gras */
+    font-size: 18px;
+    background-color: #f0f2f5; /* Fond gris clair pour contraster avec les containers */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Pas de défilement */
+    position: relative;
+}
+
+/* Conteneur pour le titre avec fond blanc et coins arrondis */
+#title-container {
+    position: fixed;
+    top: 5%;
+    left: 5%; /* Positionné à gauche */
+    background-color: #ffffff; /* Fond blanc */
+    padding: 10%;
+    border-radius: 15px; /* Coins arrondis */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+    z-index: 10;
+    width: 30%; /* Largeur du container */
+    text-align: center;
+    transition: opacity 1s ease-in-out; /* Transition fluide lors du changement */
+    opacity: 1;
+}
+
+/* Transition pour les éléments cachés ou visibles */
+#title-container.hidden, #data-container.hidden {
+    opacity: 0; /* Masquer progressivement */
+    visibility: hidden;
+}
+
+/* Style du titre */
+.title {
+    color: #333333; /* Couleur sombre pour le titre */
+    font-size: 1.8em;
+    justify-content: center;
+    margin: 0;
+}
+
+/* Conteneur vertical pour les données, légèrement descendu */
+#data-container {
+    position: fixed;
+    top: 160px; /* Ajusté en dessous du titre */
+    right: 20px;
+    width: 20%;
+    background-color: #ffffff; /* Fond blanc */
+    padding: 1%;
+    color: #333333;
+    border-radius: 15px; /* Coins arrondis */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+    font-size: 10px;
+    z-index: 10;
+    transition: opacity 1s ease-in-out; /* Transition fluide lors du changement */
+    opacity: 1;
+}
+
+/* Style des paragraphes à l'intérieur du data-container */
+#data-container p {
+    margin: 5% 0;
+    padding: 0%;
+    background-color: #fafafa; /* Légère nuance de blanc */
+    border-radius: 10px; /* Coins arrondis pour les éléments */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15); /* Ombre plus marquée autour des carrés */
+    text-align: center;
+    font-size: 2em; /* Taille légèrement plus grande */
+    line-height: 1.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10%; /* Hauteur uniforme pour les carrés */
+    width: 100%; /* Largeur maximale pour occuper le container */
+}
+
+/* Style du titre du container des données */
+.data-title {
+    text-align: center;
+    font-size: 4em; /* Taille du titre */
+    color: #333333; /* Couleur sombre pour le titre */
+    padding-bottom: 5%;
+    border-bottom: 2px solid #ddd; /* Ligne séparatrice sous le titre */
+}
+
+/* Container pour le globe 3D et la map */
+#globe-container, #map-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease-in-out, visibility 0s 2s; /* Transition fluide */
+}
+
+/* Lorsque visible, rendre l'élément opaque et visible */
+#globe-container.visible, #map-container.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1s ease-in-out;
+}
+
+/* Conteneur avec un titre, similaire au bloc counter-section */
+.counter-container {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.counter-title {
+    font-size: 3.2em;
+    color: #333333;
+    text-align: center;
+}
