@@ -43,6 +43,28 @@ body {
     margin: 0;
 }
 
+/* Conteneur pour le logo avec fond blanc et coins arrondis */
+#logo-container {
+    position: fixed;
+    top: 20px; /* Positionnez le conteneur en haut */
+    left: 50%;
+    transform: translateX(-50%); /* Centrer horizontalement */
+    background-color: #ffffff; /* Fond blanc */
+    padding: 10px;
+    border-radius: 15px; /* Coins arrondis */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+    z-index: 10;
+    width: 150px; /* Largeur du container */
+    text-align: center;
+}
+
+/* Style pour le logo */
+.logo {
+    width: 100%; /* Ajuste la largeur du logo à celle du container */
+    height: auto; /* Préserve le ratio du logo */
+}
+
+
 /* Conteneur vertical pour les données, légèrement descendu */
 #data-container {
     position: fixed;
