@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Globe & Map</title>
+
+    <!-- Lien vers le fichier CSS externe -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        /* Utilisation de la police DM Sans pour toute la page */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: bold;
+            background-color: #f0f2f5; /* Fond gris clair */
+            overflow: hidden; /* Pas de défilement */
+        }
+
+        /* Assure-toi que ces deux conteneurs sont toujours visibles et fixes */
+        #title-container, #data-container {
+            position: fixed;
+            z-index: 10; /* Toujours au-dessus du globe et de la carte */
+            background: rgba(255, 255, 255, 0.8); /* Légèrement transparent pour voir derrière */
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Position du titre (coin haut gauche) */
+        #title-container {
+            top: 20px;
+            left: 20px; /* Positionnement sur le côté gauche */
+            transform: none; /* Enlever la transformation pour un alignement direct */
+        }
+
+        /* Style du titre */
+        .title {
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        /* Position des informations sur la commande (en bas à droite) */
+        #data-container {
+            bottom: 10%;
+            right: 5%;
+        }
+
+        /* Style du texte des infos */
+        .data-title {
+            font-size: 1.0em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* Les conteneurs pour le globe et la carte doivent prendre tout l'écran */
+        #globe-container, #map-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map-container {
+            z-index: 1; /* Pour s'assurer qu'il est en-dessous des autres conteneurs */
+        }
+    </style>
+</head>
+<body>
+    <!-- Container pour le titre principal (toujours visible) -->
+    <div id="title-container">
+        <h1 class="title">Last order placed</h1>
+    </div>
+
+    <!-- Container pour les données (toujours visible) -->
+    <div id="data-container">
+        <h2 class="data-title">Order infos</h2>
+        <!-- Les données seront insérées ici dynamiquement -->
+    </div>
+
+    <!-- Container pour le globe (visible selon la localisation) -->
+    <div id="globe-container"></div>
+
+    <!-- Container pour la carte (visible selon la localisation) -->
+    <div id="map-container"></div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three Globe -->
+    <script src="https://unpkg.com/three-globe"></script>
+    <!-- Script personnalisé -->
+    <script src="script.js"></script>
+</body>
+</html>
