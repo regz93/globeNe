@@ -177,23 +177,23 @@ function populateDataContainer(data) {
     container.innerHTML = '<h2 class="data-title">Order infos</h2>';
 
     const price = document.createElement('p');
-    price.textContent = `Amount: ${data[14][1]} €`;
+    price.textContent = `Amount: ${data[32][1]} €`;
     container.appendChild(price);
 
     const products = document.createElement('p');
-    products.textContent = `Eshop: ${data[15][1]}`;
+    products.textContent = `Eshop: ${data[33][1]}`;
     container.appendChild(products);
 
     const brand = document.createElement('p');
-    brand.textContent = `Customer type: ${data[16][1]}`;
+    brand.textContent = `Customer type: ${data[34][1]}`;
     container.appendChild(brand);
 
     const city = document.createElement('p');
-    city.textContent = `Location: ${data[17][1]}`;
+    city.textContent = `Location: ${data[35][1]}`;
     container.appendChild(city);
 
     const customerType = document.createElement('p');
-    customerType.textContent = `Channel: ${data[18][1]}`;
+    customerType.textContent = `Channel: ${data[36][1]}`;
     container.appendChild(customerType);
 }
 
@@ -202,8 +202,8 @@ async function initializeGlobe() {
     const updateData = async () => {
         const data = await fetchData();
 
-        const lap = parseFloat(data[13][1].split(",")[0]);
-        const lng = parseFloat(data[13][1].split(",")[1]);
+        const lap = parseFloat(data[31][1].split(",")[0]);
+        const lng = parseFloat(data[31][1].split(",")[1]);
 
         if (isInIleDeFrance(lap, lng)) {
             showMap(lap, lng, data);
