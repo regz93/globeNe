@@ -1,0 +1,213 @@
+/* Importation de la police Gustavo */
+@font-face {
+    font-family: 'Gustavo';
+    src: url('gustavo.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    /* Couleurs Nutrimuscle */
+    --color-bg: #1D2A35; /* Fond sombre / Bleu-gris */
+    --color-text: #FFFFFF; /* Texte Blanc */
+    --color-tile-border: #888; /* Bordure des cases (Gris clair) */
+    
+    /* Couleurs de feedback (Indices) */
+    --color-correct: #0093E5; /* Bleu Vif Nutrimuscle (Bien placé) */
+    --color-present: #FFCC00; /* Jaune d'Or (Mauvais endroit) */
+    --color-absent: #777777; /* Gris Neutre (Non utilisé) */
+    --color-default: #F0F0F0; /* Case par défaut (Gris très clair/Blanc cassé) */
+    --color-key-default: #4A4A4A; /* Touche clavier par défaut */
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Gustavo', sans-serif;
+    
+    /* --- MODIFICATION CLÉ --- */
+    display: flex; /* Active Flexbox */
+    flex-direction: column; /* Alignement vertical */
+    align-items: center; /* **Centre horizontalement tous les enfants directs** */
+    /* ------------------------- */
+    
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    width: 100%; /* S'assurer qu'il prend toute la largeur */
+}
+
+/* --- TITRE --- */
+.header h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+    color: var(--color-correct); /* Utilisation du bleu vif pour le titre */
+    text-transform: uppercase;
+}
+
+/* --- GRILLE DE JEU (PLATEAU) --- */
+#board {
+    display: flex; 
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px;
+    box-sizing: border-box;
+    
+    /* === CORRECTION DU CENTRAGE HORIZONTAL DU PLATEAU === */
+    width: 100%; 
+    max-width: 500px; 
+    margin-left: auto;  
+    margin-right: auto; 
+    /* ========================================= */
+}
+
+.row {
+    display: grid;
+    grid-gap: 8px;
+    width: 100%; /* La ligne prend toute la largeur du plateau */
+    
+    /* === CORRECTION DU CENTRAGE DES CASES À L'INTÉRIEUR DE LA LIGNE === */
+    /* Utilisé avec un nombre fixe de colonnes (grid-template-columns) */
+    /* pour centrer la grille elle-même dans la largeur du .row */
+    justify-content: center; 
+    /* ================================================================= */
+}
+
+
+/* --- GRILLE DE JEU (PLATEAU) --- */
+/* ... (Le style #board et .row reste le même) ... */
+
+.tile {
+    width: 100%; 
+    padding-top: 100%; /* Pour garantir une case carrée (hauteur = largeur) */
+    position: relative; /* **CORRECTION CLÉ** : Nécessaire pour centrer le span */
+    border: 2px solid var(--color-tile-border);
+    font-size: 1.8em;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: background-color 0.5s, border-color 0.5s;
+    /* Ajout du style par défaut pour le centrage des lettres */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 0; /* Annule le padding-top si on revient à un flex simple */
+    height: 60px; /* Taille fixe pour simplifier */
+    width: 60px; /* Taille fixe pour simplifier */
+}
+
+/* Le span devient moins nécessaire, mais si on le garde pour le centrage absolu : */
+.tile span {
+    /* **CORRECTION :** Le contenu de la case est maintenant le <span> */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block; /* S'assure qu'il est bien un bloc */
+    width: 100%; /* S'assure qu'il prend toute la place pour le centrage */
+    text-align: center;
+    line-height: 1; /* Améliore le centrage vertical */
+}
+
+/* Style de la première lettre fixe (Bleu Vif) */
+.tile.fixed {
+    /* Conserve l'apparence de la première lettre */
+    background-color: var(--color-correct); 
+    color: var(--color-text); 
+    border-color: var(--color-correct);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); 
+}
+
+/* ... (Le reste du CSS est conservé) ... */
+
+/* Style de la première lettre fixe (Bleu Vif) */
+.tile.fixed {
+    background-color: var(--color-correct); 
+    color: var(--color-text); 
+    border-color: var(--color-correct);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); 
+}
+
+/* Styles des cases après validation */
+.tile.correct {
+    background-color: var(--color-correct);
+    color: var(--color-text);
+    border-color: var(--color-correct);
+}
+
+.tile.present {
+    background-color: var(--color-present);
+    color: var(--color-bg); /* Texte sombre sur Jaune */
+    border-color: var(--color-present);
+}
+
+.tile.absent {
+    background-color: var(--color-absent);
+    color: var(--color-text);
+    border-color: var(--color-absent);
+}
+
+/* --- CLAVIER VIRTUEL --- */
+#keyboard-container {
+    margin-top: 30px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.key {
+    background-color: var(--color-key-default);
+    color: var(--color-text);
+    padding: 15px 12px;
+    margin: 0 4px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-grow: 1;
+    min-width: 30px;
+    text-align: center;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
+/* Styles des touches du clavier après validation */
+.key.correct {
+    background-color: var(--color-correct);
+    color: var(--color-text);
+}
+
+.key.present {
+    background-color: var(--color-present);
+    color: var(--color-bg);
+}
+
+/* La touche ABSENT doit avoir une visibilité baissée */
+.key.absent {
+    background-color: var(--color-absent);
+    color: var(--color-text);
+    opacity: 0.5; 
+}
+
+/* Taille spécifique pour les touches Entrée et Retour Arrière */
+.key.large {
+    flex-grow: 1.5;
+    font-size: 0.8em;
+    padding: 15px 5px;
+}
+
+/* Media Query pour un meilleur affichage sur mobile */
+@media (max-width: 600px) {
+    .tile {
+        font-size: 1.5em;
+    }
+    .key {
+        padding: 10px 5px;
+    }
+}

@@ -1,237 +1,311 @@
-// Configuration initiale de la scène, de la caméra et du renderer
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('globe-container').appendChild(renderer.domElement);
-
-// Déclaration de la variable globe et de la carte Leaflet
-let globe;
-let map;
-let parisMarker, destinationMarker, routeLine;
-
-// Point de départ (Paris)
-const startLat = 48.8696;
-const startLng = 2.3484;
-
-// Fonction pour vérifier si les coordonnées sont en Île-de-France
-function isInIleDeFrance(lat, lng) {
-    // Approximation pour l'Île-de-France
-    const isIDF = lat >= 47.0 && lat <= 50.0 && lng >= 1.0 && lng <= 4.5;
-    return isIDF;
-}
-
-// Fonction pour afficher une carte de l'Île-de-France avec Leaflet
-function showMap(lat, lng, data) {
-    const globeContainer = document.getElementById('globe-container');
-    const mapContainer = document.getElementById('map-container');
-
-    // Masquer le globe et afficher la carte
-    globeContainer.style.display = 'none';
-    mapContainer.style.display = 'block';
-
-    // Initialiser la carte Leaflet
-    if (!map) {
-        map = L.map('map-container').setView([lat, lng], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-        }).addTo(map);
-
-        // Ajouter le marqueur de Paris
-        parisMarker = L.marker([startLat, startLng]).addTo(map).bindPopup('Siège').openPopup();
-    }
-
-    // Supprimer la ligne précédente si elle existe
-    if (routeLine) {
-        map.removeLayer(routeLine);
-    }
-
-    // Ajouter un marqueur pour la destination
-    if (destinationMarker) {
-        map.removeLayer(destinationMarker);
-    }
-
-    // Formater la phrase avec les données du JSON (utilisation de template literals)
-    const popupText = `Hey ! Je suis un client du shop ${data[33][1]}  ! J'ai commandé pour ${data[32][1]} euros depuis ${data[35][1]}.`;
-
-    // Ajouter un marqueur pour la destination avec le popup personnalisé et autoPan activé
-    destinationMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupText, { autoPan: true }).openPopup();
-
-    // Tracer une ligne droite entre Paris et la destination
-    routeLine = L.polyline([[startLat, startLng], [lat, lng]], { color: 'green' }).addTo(map);
-
-    // Zoomer automatiquement pour inclure Paris et la destination avec des bordures ajustées
-    const bounds = L.latLngBounds([[startLat, startLng], [lat, lng]]);
-    map.fitBounds(bounds, { padding: [50, 50] }); // Ajoute un padding pour éviter que le popup soit coupé
-
-}
-
-// Variable pour suivre si les lumières ont déjà été ajoutées
-let lightsAdded = false;
-
-// Fonction pour afficher le globe avec Three.js
-function showGlobe(lat, lng) {
-    const globeContainer = document.getElementById('globe-container');
-    const mapContainer = document.getElementById('map-container');
-
-    // Masquer la carte et afficher le globe
-    mapContainer.style.display = 'none';
-    globeContainer.style.display = 'block';
-
-    // Initialiser le globe s'il n'existe pas déjà
-    if (!globe) {
-        globe = new ThreeGlobe()
-            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg') // Texture de la Terre
-            .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png'); // Topologie de la Terre
-
-        scene.add(globe);
-    }
-
-    // Vérifier si les lumières ont déjà été ajoutées pour éviter leur accumulation
-    if (!lightsAdded) {
-        // Ajout de la lumière ambiante
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        scene.add(ambientLight);
-
-        // Ajout de la lumière directionnelle pour améliorer l'éclairage
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(5, 3, 5); // Positionner la lumière
-        scene.add(directionalLight);
-
-        // Marquer que les lumières ont été ajoutées
-        lightsAdded = true;
-    }
-
-    // Ajout des arcs au globe
-    const arcsData = [
-        { startLat, startLng, endLat: lat, endLng: lng, color: 'green' }, // Paris -> Destination
+document.addEventListener('DOMContentLoaded', () => {
+    // ----------------------------------------------------
+    // 1. MOTS-CLÉS DE NUTRIMUSCLE
+    // ----------------------------------------------------
+    const WORD_LIST = [
+        // --- NUTRIMUSCLE & PRODUITS ---
+        "WHEY", "CASEINE", "CREATINE", "SHAKER", "PROTEINE", "MUSCLE", "ISOLAT", 
+        "HYDRO", "NUTRITION", "COMPLEMENT", "AMINOS", "PEPTIDE", "VITAMINE", "MINERAUX", 
+        "OATMEAL", "GAINER", "BARRE", "CONCENTRE", "PURETE", "QUALITE", "SERUM",
+        "GLUTAMINE", "BCAA", "CITRULINE", "ARGININE", "ELECTROLYTES", "OMEGA", "PURE", 
+        "NUTRIMUSCLE", // Mots plus longs possibles
+        "COLLAGENE", 
+    
+        // --- MUSCULATION : Mouvements & Exercices ---
+        "POMPE", "SQUAT", "TRACTION", "FENTES", "DIPS", "CURLS", "PRESSE", 
+        "ROWING", "DEVE", "GAINAGE", "EXTENSION", "FLEXION", "TIRAGE", "ELEVATION",
+        "POULET", // Clin d'œil à la diète
+        "ECHAUFFEMENT", "ETIREMENT", "REPETITION", "SERIE", "CHARGE", "INTENSITE",
+        "DEVELOPPE", "HALTERE", "BARRE", "KETTLEBELL", "MACHINE", "BANCS", 
+        "TERRE", // Soulevé de terre
+        "MILITAIRE", // Développé militaire
+        "MOLETS", "QUADRI", "ISCHIOS", "PEC", "DELTOIDE", "TRICEPS", "BICEPS", "ABDOS",
+        "TRAPÈZES", "DORSEAUX", "LOMBAIRES",
+    
+        // --- MUSCULATION : Terminologie & Concepts ---
+        "FORCE", "ENDURANCE", "VOLUME", "MASSE", "SECHE", "PRISE", "PERTE", 
+        "RECUP", "RECUPERATION", "SURCHARGE", "PROGRESSION", "HYPERTROPHIE", 
+        "CALORIES", "MACROS", "MICRO", "FIBRES", "METABOLISME", "ANABOLIQUE", "CATABOLIQUE",
+        "GYMNASE", "SALLE", "TRAINING", "ENTRAINEMENT", "DIETE", "MACRONUTRIMENT",
+        "REPOS", "PRISES", // Prises alimentaires
+        "CARDIO", "PHYSIQUE", "MORPHOLOGIE", "ECTOMORPHE", "MESOMORPHE", "ENDOMORPHE",
+        "PERFORMER", "PERFORMANCE", "RESISTANCE",
+    
+        // --- NUTRI' EXPERTS & GUNDILL ---
+        "GUNDILL", "OLIVIER", "EXPERT", "AUTEUR", "LIVRE", "DOSSIER", "ANALYSE", 
+        "CONSEIL", "SCIENCES", "RECHERCHE", "FORMATEUR", "CONFERENCE", "ARTICLE",
+        "YOUTUBE", "CHAINE", "SPORT", "PRATIQUE", "THEORIE", "GUIDE", "REFERENCE",
+        "METHODE", "PROGRAMME", "EXPERIENCE", "KNOWLEDGE", // Connaissance
+        "BIOLOGIE", "PHYSIOLOGIE", "BIOCHIMIE", "ALIMENTS", "CONNAISSANCE"
     ];
 
-    globe.arcsData(arcsData)
-        .arcColor('color')
-        .arcAltitude(0.2)
-        .arcStroke(0.5)
-        .arcDashLength(0.3)
-        .arcDashGap(2)
-        .arcDashInitialGap(0.3)
-        .arcDashAnimateTime(2000);
+    // Paramètres du jeu
+    const MAX_TRIES = 6;   // Nombre d'essais
+    
+    let currentGuess = '';
+    let currentRow = 0;
+    let solution = '';
+    let solutionLength = 0;
 
-    // Ajustement de la caméra pour capturer les deux points
-    adjustCamera(startLat, startLng, lat, lng);
-}
+    // ----------------------------------------------------
+    // 2. INITIALISATION ET UI
+    // ----------------------------------------------------
 
-// Fonction pour ajuster la caméra pour inclure Paris et la destination
-function adjustCamera(startLat, startLng, endLat, endLng) {
-    const midLat = (startLat + endLat) / 2;
-    const midLng = (startLng + endLng) / 2;
+    /** Affiche un message temporaire à l'utilisateur */
+    const showMessage = (message, duration = 1500) => {
+        const msgContainer = document.getElementById('message-container');
+        const msgDiv = document.createElement('div');
+        msgDiv.textContent = message;
+        msgDiv.style.cssText = `
+            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
+            background-color: #333; color: white; padding: 10px 20px;
+            border-radius: 5px; z-index: 1000; font-family: sans-serif;
+            opacity: 0; transition: opacity 0.3s;
+        `;
+        msgContainer.appendChild(msgDiv);
+        
+        // Fading in
+        setTimeout(() => { msgDiv.style.opacity = '1'; }, 10);
+        
+        // Fading out and removing
+        setTimeout(() => { msgDiv.style.opacity = '0'; }, duration);
+        setTimeout(() => { msgContainer.removeChild(msgDiv); }, duration + 300);
+    };
 
-    // Calcul de la distance entre les deux points pour ajuster le zoom
-    const distance = calculateDistance(startLat, startLng, endLat, endLng);
+    /** Choisit un mot aléatoire dans la liste. */
+    const pickWord = () => {
+        const randomIndex = Math.floor(Math.random() * WORD_LIST.length);
+        return WORD_LIST[randomIndex].toUpperCase();
+    };
 
-    // Ajuster la position de la caméra en fonction de la distance
-    const zoomFactor = Math.max(distance / 1000 + 1.5, 2); // Ajuste le zoom pour éviter d'être trop près
+    /** Construit la grille de jeu (HTML) en fonction de la longueur du mot. */
+    const buildBoard = () => {
+        const board = document.getElementById('board');
+        board.innerHTML = ''; 
 
-    // Conversion des coordonnées géographiques en coordonnées 3D pour la caméra
-    const centerCoords = globe.getCoords(midLat, midLng);
+        for (let i = 0; i < MAX_TRIES; i++) {
+            const row = document.createElement('div');
+            row.classList.add('row');
+            
+            // Définit le nombre de colonnes CSS pour cette rangée
+            row.style.gridTemplateColumns = `repeat(${solutionLength}, 1fr)`; 
+            
+            for (let j = 0; j < solutionLength; j++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.setAttribute('id', `tile-${i}-${j}`);
+                
+                // Le contenu de la case est mis dans un <span> pour le centrage CSS
+                const span = document.createElement('span');
+                tile.appendChild(span);
 
-    // Positionner la caméra avec un zoom plus adapté
-    camera.position.set(centerCoords.x * zoomFactor, centerCoords.y * zoomFactor, centerCoords.z * zoomFactor);
-
-    // Faire en sorte que la caméra regarde le centre
-    camera.lookAt(centerCoords.x, centerCoords.y, centerCoords.z);
-}
-
-
-
-// Fonction pour calculer la distance entre deux points géographiques (Haversine)
-function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371; // Rayon de la Terre en kilomètres
-    const dLat = THREE.MathUtils.degToRad(lat2 - lat1);
-    const dLng = THREE.MathUtils.degToRad(lng2 - lng1);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(THREE.MathUtils.degToRad(lat1)) * Math.cos(THREE.MathUtils.degToRad(lat2)) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance en kilomètres
-    return distance;
-}
-
-// Fonction pour récupérer les données
-async function fetchData() {
-    const response = await fetch('https://script.google.com/macros/s/AKfycbwOltLszBi2RPoNgBmEouIRY7U3S5VIx_C6zrow1M_ck00_FnW8AJm9FNGL8K7VBmRW/exec');
-    const data = await response.json();
-
-
-    // Appeler la fonction pour afficher les données dans le conteneur
-    populateDataContainer(data);
-
-    return data;
-}
-
-// Fonction pour insérer les données dans le container #data-container
-function populateDataContainer(data) {
-    const container = document.getElementById('data-container');
-
-    // Efface les anciennes données avant d'insérer les nouvelles
-    container.innerHTML = '<h2 class="data-title">Order infos</h2>';
-
-    const price = document.createElement('p');
-    price.textContent = `Amount: ${data[32][1]} €`;
-    container.appendChild(price);
-
-    const products = document.createElement('p');
-    products.textContent = `Eshop: ${data[33][1]}`;
-    container.appendChild(products);
-
-    const brand = document.createElement('p');
-    brand.textContent = `Customer type: ${data[34][1]}`;
-    container.appendChild(brand);
-
-    const city = document.createElement('p');
-    city.textContent = `Location: ${data[35][1]}`;
-    container.appendChild(city);
-
-    const customerType = document.createElement('p');
-    customerType.textContent = `Channel: ${data[36][1]}`;
-    container.appendChild(customerType);
-}
-
-// Fonction pour démarrer l'application et mettre à jour les données régulièrement
-async function initializeGlobe() {
-    const updateData = async () => {
-        const data = await fetchData();
-
-        const lap = parseFloat(data[31][1].split(",")[0]);
-        const lng = parseFloat(data[31][1].split(",")[1]);
-
-        if (isInIleDeFrance(lap, lng)) {
-            showMap(lap, lng, data);
-        } else {
-            showGlobe(lap, lng);
+                // --- MODIFICATION ICI : Activation uniquement pour la première ligne (i === 0) ---
+                if (i === 0 && j === 0) {
+                    span.textContent = solution[0]; 
+                    tile.classList.add('fixed');
+                }
+                
+                row.appendChild(tile);
+            }
+            board.appendChild(row);
         }
     };
 
-    // Appel initial
-    await updateData();
+    /** Construit le clavier virtuel (HTML). */
+    const buildKeyboard = () => {
+        // (Clavier AZERTY standard français)
+        const keys = [
+            'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+            'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+            '⌫', 'W', 'X', 'C', 'V', 'B', 'N', 'ENTRER'
+        ];
+        const keyboardContainer = document.getElementById('keyboard-container');
+        keyboardContainer.innerHTML = ''; 
 
-    // Mettre à jour les données toutes les 5 secondes (5000 ms)
-    setInterval(updateData, 5000); // Ajuste le délai si nécessaire
-}
+        const rows = [
+            keys.slice(0, 10),
+            keys.slice(10, 20),
+            keys.slice(20, 28)
+        ];
 
-// Fonction d'animation du globe
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
+        rows.forEach(rowKeys => {
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('keyboard-row');
+            
+            rowKeys.forEach(keyText => {
+                const key = document.createElement('div');
+                key.classList.add('key');
+                key.textContent = keyText;
+                key.setAttribute('data-key', keyText);
+                
+                if (keyText === 'ENTRER' || keyText === '⌫') {
+                    key.classList.add('large');
+                }
 
-// Démarrage de l'application
-initializeGlobe();
-animate();
+                key.addEventListener('click', () => handleKeyInput(keyText));
+                rowDiv.appendChild(key);
+            });
+            keyboardContainer.appendChild(rowDiv);
+        });
+    };
 
-// Réajustement de la taille du rendu en cas de redimensionnement de la fenêtre
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    /** Fonction de démarrage du jeu. */
+    const initGame = () => {
+        document.getElementById('board').innerHTML = '';
+        
+        solution = pickWord();
+        solutionLength = solution.length; 
+        
+        buildBoard();
+        buildKeyboard();
+        
+        // Initialise l'essai avec la première lettre fixe
+        currentGuess = solution[0]; 
+    };
+
+    // ----------------------------------------------------
+    // 3. LOGIQUE DU JEU
+    // ----------------------------------------------------
+
+    /** Met à jour la lettre sur le plateau. */
+    const updateBoard = () => {
+        const row = document.getElementById('board').querySelector(`.row:nth-child(${currentRow + 1})`);
+        if (!row) return;
+
+        // La boucle commence à 0, mais on ignore l'index 0 (première case)
+        for (let i = 0; i < solutionLength; i++) {
+            const tile = row.querySelector(`.tile:nth-child(${i + 1})`);
+            
+            // Cibler le <span> à l'intérieur
+            const span = tile.querySelector('span'); 
+            
+            if (i === 0) continue; // On ignore la première case (elle est fixe)
+
+            span.textContent = currentGuess[i] || ''; 
+            
+            // Met à jour la bordure uniquement si une lettre est tapée
+            if (!tile.classList.contains('fixed')) {
+                 tile.style.borderColor = currentGuess[i] ? 'var(--color-text)' : 'var(--color-tile-border)';
+            }
+        }
+    };
+
+    /** Gère l'entrée (clavier physique ou virtuel). */
+    const handleKeyInput = (key) => {
+        key = key.toUpperCase();
+
+        if (key === 'ENTRER' || key === 'ENTER') {
+            if (currentGuess.length === solutionLength) {
+                checkGuess();
+            } else {
+                showMessage(`Le mot doit faire ${solutionLength} lettres !`);
+            }
+        } else if (key === '⌫' || key === 'BACKSPACE') {
+            if (currentGuess.length > 1) { // Empêche de supprimer la première lettre
+                currentGuess = currentGuess.slice(0, -1);
+                updateBoard();
+            }
+        } else if (key.length === 1 && key.match(/[A-Z]/)) {
+            if (currentGuess.length < solutionLength) {
+                currentGuess += key;
+                updateBoard();
+            }
+        }
+    };
+
+    /** Vérifie le mot entré et applique les couleurs. */
+    const checkGuess = () => {
+        const guess = currentGuess;
+        const solutionLetters = solution.split('');
+        const guessLetters = guess.split('');
+        
+        // 1. Initialisation de la carte des lettres (pour gérer les doublons)
+        const solutionMap = {};
+        solutionLetters.forEach(letter => {
+            solutionMap[letter] = (solutionMap[letter] || 0) + 1;
+        });
+        
+        // Tableau pour stocker les classes finales à appliquer 
+        const tileClasses = new Array(solutionLength).fill('absent');
+
+        // 2. Première passe : lettres CORRECTES (Bleu Vif)
+        for (let i = 0; i < solutionLength; i++) {
+            if (guessLetters[i] === solutionLetters[i]) {
+                tileClasses[i] = 'correct';
+                solutionMap[guessLetters[i]]--;
+            }
+        }
+
+        // 3. Deuxième passe : lettres PRÉSENTES (Jaune d'Or) et ABSENTES (Gris Neutre)
+        for (let i = 0; i < solutionLength; i++) {
+            if (tileClasses[i] === 'correct') continue; 
+            
+            if (solutionMap[guessLetters[i]] > 0) {
+                tileClasses[i] = 'present';
+                solutionMap[guessLetters[i]]--;
+            }
+            // Sinon, tileClasses[i] reste 'absent'
+        }
+
+        // 4. Application des classes (Tuiles et Clavier)
+        for (let i = 0; i < solutionLength; i++) {
+            const tile = document.getElementById(`tile-${currentRow}-${i}`);
+            const key = document.querySelector(`.key[data-key="${guessLetters[i]}"]`);
+            
+            // Applique la classe à la tuile
+            tile.classList.add(tileClasses[i]);
+            
+            // Met à jour la touche du clavier
+            if (tileClasses[i] === 'correct') {
+                key.classList.remove('absent', 'present');
+                key.classList.add('correct');
+            } else if (tileClasses[i] === 'present' && !key.classList.contains('correct')) {
+                key.classList.remove('absent');
+                key.classList.add('present');
+            } else if (tileClasses[i] === 'absent' && !key.classList.contains('correct') && !key.classList.contains('present')) {
+                key.classList.add('absent');
+            }
+        }
+
+        // 5. Logique de fin de partie
+        if (guess === solution) {
+            showMessage('Bravo, tu fais partie des Nutri-Experts !', 3000);
+            document.removeEventListener('keydown', handleKeydown);
+        } else if (currentRow >= MAX_TRIES - 1) {
+            showMessage(`Dommage ! Le mot était : ${solution}`, 3000);
+            document.removeEventListener('keydown', handleKeydown);
+        } else {
+            // Passe à l'essai suivant
+            currentRow++;
+            
+            // --- NOUVEAU : Afficher la lettre fixe sur la nouvelle ligne ---
+            if (currentRow < MAX_TRIES) {
+                const nextTile = document.getElementById(`tile-${currentRow}-0`);
+                if (nextTile) {
+                    const nextSpan = nextTile.querySelector('span');
+                    // On pourrait aussi le faire dans buildBoard, mais c'est plus propre ici
+                    nextSpan.textContent = solution[0]; 
+                    nextTile.classList.add('fixed');
+                }
+            }
+            // -------------------------------------------------------------
+            
+            currentGuess = solution[0]; // Réinitialise l'essai avec la première lettre fixe
+            updateBoard();
+        }
+    };
+
+    /** Écoute le clavier physique. */
+    const handleKeydown = (e) => {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) { 
+            handleKeyInput(e.key);
+        }
+    };
+
+    // Ajoute l'écouteur pour le clavier physique
+    document.addEventListener('keydown', handleKeydown);
+
+    // Lancement du jeu
+    initGame();
 });
